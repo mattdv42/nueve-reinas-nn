@@ -149,6 +149,19 @@ section.view { display: grid; gap: 40px; }
 .practice .word:not(.shown) .def, .practice .word:not(.shown) .gloss { display: none; }
 .practice .word:not(.shown) .reveal { display: inline-block; }
 .empty-note { color: var(--muted); font-style: italic; }
+.word .cat { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.word .ex { font-size: 14px; font-style: italic; color: var(--muted); }
+.practice .word:not(.shown) .ex { display: none; }
+.cat-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-filters button {
+  font-family: var(--f-display); font-weight: 600; font-size: 13px; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+}
+.cat-filters button[aria-pressed="true"] { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.sync { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.sync::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--line); vertical-align: 1px; }
+.sync[data-state="ok"]::before { background: #2f9a5c; }
+.sync[data-state="offline"]::before { background: var(--nn); }
 
 /* Readings */
 .start-here { font-size: 15px; }
@@ -203,6 +216,7 @@ footer .wrap { padding-block: 20px; }
     <span class="label">Presentación de cine · Vocabulario y lecturas</span>
     <h1><span class="nr">Nueve reinas</span> y <span class="nn">NN: Sin identidad</span></h1>
     <p>Vocabulario útil para ver las dos películas y reseñas para entender mejor cada una. <span class="en">Vocabulary to watch with, plus reviews and analysis.</span></p>
+    <p class="sync" id="sync" data-state="loading">Cargando la hoja de cálculo de la clase…</p>
   </div>
 </header>
 
@@ -273,6 +287,7 @@ footer .wrap { padding-block: 20px; }
       <button class="toggle" id="p-nr" aria-pressed="false" type="button">Modo práctica</button>
       <span class="count" id="c-nr"></span>
     </div>
+    <div class="cat-filters" id="cats-nr" role="group" aria-label="Filtrar por categoría" hidden></div>
     <div class="vocab" id="vocab-nr"></div>
   </div>
   <div class="callout">
@@ -303,6 +318,7 @@ footer .wrap { padding-block: 20px; }
       <button class="toggle" id="p-nn" aria-pressed="false" type="button">Modo práctica</button>
       <span class="count" id="c-nn"></span>
     </div>
+    <div class="cat-filters" id="cats-nn" role="group" aria-label="Filtrar por categoría" hidden></div>
     <div class="vocab" id="vocab-nn"></div>
   </div>
 </section>
@@ -322,12 +338,10 @@ footer .wrap { padding-block: 20px; }
   <div class="two-col">
     <div class="block nr-scope">
       <h2 style="color: var(--nr)">Nueve reinas</h2>
-      <p class="start-here">Para empezar: la reseña de Espinof (corta) y la entrevista de Página/12 (la voz del director).</p>
       <div class="readings" id="read-nr"></div>
     </div>
     <div class="block nn-scope">
       <h2 style="color: var(--nn)">NN</h2>
-      <p class="start-here">Para empezar: la reseña de Micropsia (español) o la de FIPRESCI (inglés), que explica el contexto histórico.</p>
       <div class="readings" id="read-nn"></div>
     </div>
   </div>
@@ -358,7 +372,7 @@ footer .wrap { padding-block: 20px; }
 <footer><div class="wrap">Guía de clase sobre <i>Nueve reinas</i> (2000) y <i>NN: Sin identidad</i> (2014). Los enlaces abren las reseñas originales en sus sitios.</div></footer>
 
 <script>
-/* [palabra, significado, English] */
+/* Built-in backup lists: [palabra, significado, English]. The live data comes from the Google Sheet below. */
 const VOCAB = {
   nr: [
     ["la estafa", "un engaño para sacar dinero", "scam, con"],
@@ -422,29 +436,99 @@ const READINGS = {
   ]
 };
 
-function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+/* ---------- Google Sheet connection ----------
+   The sheet "Cine – vocabulario y reseñas" is published to the web as CSV.
+   On every visit the page downloads both tabs; if that fails it keeps the
+   built-in lists above. Google refreshes the published copy about every 5 minutes. */
+const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQXCjFZWECtcWM8qKqJy0yTKgH0KcBuzusc5BNgjkiWpXiBpf-_5RTSGYmnr6Jw06rgs5KRBicINEwL/pub";
+const SHEET_VOCAB = SHEET_BASE + "?gid=0&single=true&output=csv";    // tab "vocabulario"
+const SHEET_READINGS = SHEET_BASE + "?gid=1&single=true&output=csv"; // tab "resenas"
 
-/* Vocabulary */
+function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+function norm(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim(); }
+
+/* Built-in copies, converted to the same shape the sheet produces */
+VOCAB.nr = VOCAB.nr.map(([w, def, en]) => ({ w, def, en, ex: "", cat: "" }));
+VOCAB.nn = VOCAB.nn.map(([w, def, en]) => ({ w, def, en, ex: "", cat: "" }));
+["nr", "nn"].forEach(f => { READINGS[f] = READINGS[f].map(r => ({ ...r, t: r.t + ", " + r.src, src: "" })); });
+
+/* CSV parser that handles quoted fields with commas, quotes and line breaks */
+function parseCSV(text) {
+  const rows = []; let row = [], field = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); rows.push(row); row = []; field = "";
+    } else field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  const head = (rows.shift() || []).map(norm);
+  return rows
+    .filter(r => r.some(v => v.trim() !== ""))
+    .map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] || "").trim()])));
+}
+function filmKey(p) { const n = norm(p); return n.startsWith("nueve") ? "nr" : n.startsWith("nn") ? "nn" : null; }
+const LEVELS = { facil: "Fácil", medio: "Medio", dificil: "Difícil" };
+const YES = ["si", "yes", "x", "1", "true"];
+
+async function getCSV(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return parseCSV(await res.text());
+  } finally { clearTimeout(timer); }
+}
+
+/* ---------- Vocabulary ---------- */
+const catFilter = { nr: "all", nn: "all" };
+function renderCats(film) {
+  const box = document.getElementById("cats-" + film);
+  const cats = [...new Set(VOCAB[film].map(w => w.cat).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  if (!cats.includes(catFilter[film])) catFilter[film] = "all";
+  box.hidden = cats.length < 2;
+  box.innerHTML = ["all", ...cats].map(c =>
+    `<button type="button" data-cat="${esc(c)}" aria-pressed="${c === catFilter[film]}">${c === "all" ? "Todas" : esc(c)}</button>`).join("");
+}
 function renderVocab(film) {
   const box = document.getElementById("vocab-" + film);
-  const q = norm(document.getElementById("q-" + film).value.trim());
+  const q = norm(document.getElementById("q-" + film).value);
   const all = VOCAB[film].map((w, i) => ({ w, i }));
-  const list = all.filter(({ w }) => !q || norm(w.join(" ")).includes(q));
-  document.getElementById("c-" + film).textContent = q ? `${list.length} de ${all.length} palabras` : `${all.length} palabras`;
-  if (!list.length) { box.innerHTML = '<p class="empty-note">No hay palabras que coincidan con tu búsqueda.</p>'; return; }
+  const list = all.filter(({ w }) =>
+    (catFilter[film] === "all" || w.cat === catFilter[film]) &&
+    (!q || norm([w.w, w.def, w.en, w.ex, w.cat].join(" ")).includes(q)));
+  document.getElementById("c-" + film).textContent =
+    list.length === all.length ? `${all.length} palabras` : `${list.length} de ${all.length} palabras`;
+  if (!list.length) { box.innerHTML = '<p class="empty-note">No hay palabras que coincidan.</p>'; return; }
   box.innerHTML = list.map(({ w, i }) => `
     <article class="word">
       ${film === "nn" ? `<span class="tag-no">Nº ${String(i + 1).padStart(3, "0")}</span>` : ""}
-      <span class="term">${esc(w[0])}</span>
-      <p class="def">${esc(w[1])}</p>
-      <p class="gloss">${esc(w[2])}</p>
+      ${w.cat ? `<span class="cat">${esc(w.cat)}</span>` : ""}
+      <span class="term">${esc(w.w)}</span>
+      <p class="def">${esc(w.def)}</p>
+      ${w.en ? `<p class="gloss">${esc(w.en)}</p>` : ""}
+      ${w.ex ? `<p class="ex">${esc(w.ex)}</p>` : ""}
       <button class="reveal" type="button">Ver significado</button>
     </article>`).join("");
 }
 ["nr", "nn"].forEach(film => {
+  renderCats(film);
   renderVocab(film);
   document.getElementById("q-" + film).addEventListener("input", () => renderVocab(film));
+  document.getElementById("cats-" + film).addEventListener("click", e => {
+    const b = e.target.closest("[data-cat]");
+    if (!b) return;
+    catFilter[film] = b.dataset.cat;
+    renderCats(film);
+    renderVocab(film);
+  });
   const btn = document.getElementById("p-" + film);
   const box = document.getElementById("vocab-" + film);
   btn.addEventListener("click", () => {
@@ -459,31 +543,70 @@ function renderVocab(film) {
   });
 });
 
-/* Readings */
+/* ---------- Readings ---------- */
 let lang = "all";
 function renderReadings() {
   ["nr", "nn"].forEach(film => {
     const box = document.getElementById("read-" + film);
-    const list = READINGS[film].filter(r => lang === "all" || r.lang === lang);
-    box.innerHTML = list.length ? list.map(r => `
+    const list = READINGS[film].filter(r => lang === "all" || norm(r.lang) === norm(lang));
+    box.innerHTML = list.length ? list.map(r => {
+      const lvl = LEVELS[norm(r.lvl)];
+      const safeUrl = /^https?:\/\//i.test(r.url) ? r.url : "";
+      const title = safeUrl ? `<a href="${esc(safeUrl)}" target="_blank" rel="noopener">${esc(r.t)}</a>` : esc(r.t);
+      return `
       <article class="reading${r.pick ? " pick" : ""}">
         <div class="chips">
           ${r.pick ? '<span class="chip pick">Para empezar</span>' : ""}
-          <span class="chip">${esc(r.lang)}</span>
-          <span class="chip lvl-${esc(r.lvl)}">${esc(r.lvl)}</span>
+          ${r.lang ? `<span class="chip">${esc(r.lang)}</span>` : ""}
+          ${r.lvl ? `<span class="chip${lvl ? " lvl-" + lvl : ""}">${esc(lvl || r.lvl)}</span>` : ""}
         </div>
-        <h3><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.t)}</a></h3>
-        <p class="src">${esc(r.src)}</p>
-        <p class="why">${esc(r.why)}</p>
-      </article>`).join("") : '<p class="empty-note">No hay lecturas en este idioma.</p>';
+        <h3>${title}</h3>
+        ${r.src ? `<p class="src">${esc(r.src)}</p>` : ""}
+        ${r.why ? `<p class="why">${esc(r.why)}</p>` : ""}
+      </article>`;
+    }).join("") : '<p class="empty-note">No hay lecturas en este idioma.</p>';
   });
 }
-document.querySelectorAll(".reading-filters button").forEach(b => b.addEventListener("click", () => {
+document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => {
   lang = b.dataset.lang;
-  document.querySelectorAll(".reading-filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  document.querySelectorAll("[data-lang]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
   renderReadings();
 }));
 renderReadings();
+
+/* ---------- Load the latest data from the sheet ---------- */
+const syncEl = document.getElementById("sync");
+(async () => {
+  const [v, r] = await Promise.allSettled([getCSV(SHEET_VOCAB), getCSV(SHEET_READINGS)]);
+  let ok = 0;
+  if (v.status === "fulfilled") {
+    const next = { nr: [], nn: [] };
+    v.value.forEach(row => {
+      const f = filmKey(row.pelicula);
+      if (f && row.palabra) next[f].push({ w: row.palabra, def: row.significado, en: row.english, ex: row.ejemplo, cat: row.categoria });
+    });
+    if (next.nr.length || next.nn.length) {
+      ["nr", "nn"].forEach(f => { if (next[f].length) { VOCAB[f] = next[f]; renderCats(f); renderVocab(f); } });
+      ok++;
+    }
+  }
+  if (r.status === "fulfilled") {
+    const next = { nr: [], nn: [] };
+    r.value.forEach(row => {
+      const f = filmKey(row.pelicula);
+      if (f && row.titulo) next[f].push({ t: row.titulo, src: "", url: row.url, lang: row.idioma, lvl: row.nivel, why: row.nota, pick: YES.includes(norm(row.empezar)) });
+    });
+    if (next.nr.length || next.nn.length) {
+      ["nr", "nn"].forEach(f => { if (next[f].length) READINGS[f] = next[f]; });
+      renderReadings();
+      ok++;
+    }
+  }
+  syncEl.dataset.state = ok === 2 ? "ok" : "offline";
+  syncEl.textContent = ok === 2
+    ? "Datos al día desde la hoja de cálculo de la clase."
+    : "No se pudo conectar con la hoja de cálculo; se muestra la copia guardada.";
+})();
 
 /* Routing */
 const VIEWS = ["inicio", "nueve-reinas", "nn", "lecturas", "conectar"];
