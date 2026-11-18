@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Vocabulario y lecturas para Nueve reinas y NN: Sin identidad.">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font: 14px/1.5 system-ui, sans-serif; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style><title>Nueve reinas y NN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column under a sticky tab bar. Each film keeps its own accent:
+   Nueve reinas = stamp carmine with perforated "stamp" vocab cards;
+   NN = earth ochre with numbered evidence-tag cards. */
+:root {
+  --bg: #f2f3f5;
+  --surface: #ffffff;
+  --ink: #1b2130;
+  --muted: #5b6375;
+  --line: #d7dae2;
+  --nr: #a3234f;
+  --nr-soft: #f6e4ea;
+  --nn: #8a5a12;
+  --nn-soft: #f3ead9;
+  --focus: #2f5bd3;
+  --star: #c48a0a;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Literata", Georgia, "Times New Roman", serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151c; --surface: #1a1e28; --ink: #e8eaf0; --muted: #a2a9b8; --line: #2d3342;
+    --nr: #f07ea4; --nr-soft: #3a1e2a; --nn: #e0b25e; --nn-soft: #33291a; --focus: #8eabff; --star: #f0c24f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151c; --surface: #1a1e28; --ink: #e8eaf0; --muted: #a2a9b8; --line: #2d3342;
+  --nr: #f07ea4; --nr-soft: #3a1e2a; --nn: #e0b25e; --nn-soft: #33291a; --focus: #8eabff; --star: #f0c24f; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap {
+  max-width: 940px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+p, ul, ol { margin: 0; }
+a { color: var(--focus); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.label { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.en { color: var(--muted); font-style: italic; }
+.nr-scope { --accent: var(--nr); --soft: var(--nr-soft); }
+.nn-scope { --accent: var(--nn); --soft: var(--nn-soft); }
+
+/* Header + tabs */
+header.site { background: var(--surface); border-bottom: 1px solid var(--line); }
+header.site .wrap { padding-block: 28px 20px; display: grid; gap: 8px; }
+header.site h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 800; letter-spacing: -.01em; }
+header.site h1 .nr { color: var(--nr); } header.site h1 .nn { color: var(--nn); }
+header.site p { color: var(--muted); max-width: 64ch; }
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+nav.tabs .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs a {
+  font-family: var(--f-display); font-weight: 600; font-size: 15px; text-decoration: none; color: var(--muted);
+  padding: 12px 12px 10px; border-bottom: 3px solid transparent; white-space: nowrap;
+}
+nav.tabs a:hover { color: var(--ink); }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
+nav.tabs a[data-film="nr"][aria-current="page"] { color: var(--nr); border-bottom-color: var(--nr); }
+nav.tabs a[data-film="nn"][aria-current="page"] { color: var(--nn); border-bottom-color: var(--nn); }
+
+main .wrap { padding-block: 32px 64px; }
+section.view { display: grid; gap: 40px; }
+.block { display: grid; gap: 14px; min-width: 0; }
+.block > h2 { font-size: 24px; }
+.prose { max-width: 68ch; display: grid; gap: 12px; }
+
+/* Home */
+.steps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 4px; align-content: start; }
+.steps b { font-family: var(--f-display); font-size: 17px; }
+.films { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.film-card {
+  background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--accent); border-radius: 6px;
+  padding: 20px; display: grid; gap: 10px; align-content: start; color: var(--ink); text-decoration: none;
+}
+.film-card:hover { border-color: var(--accent); }
+.film-card h3 { font-size: 26px; color: var(--accent); }
+.film-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 15px; }
+.film-card dt { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-top: 3px; }
+.film-card dd { margin: 0; }
+.film-card .go { font-family: var(--f-display); font-weight: 600; color: var(--accent); }
+
+/* Film page */
+.film-head { display: grid; gap: 12px; }
+.film-head h2 { font-size: clamp(34px, 6vw, 52px); font-weight: 800; color: var(--accent); }
+.cast { display: flex; flex-wrap: wrap; gap: 8px; }
+.cast span { background: var(--soft); border-radius: 4px; padding: 4px 10px; font-size: 14px; }
+.cast b { font-family: var(--f-display); }
+.callout {
+  background: var(--soft); border-radius: 6px; padding: 16px 18px; display: grid; gap: 6px; max-width: 68ch;
+}
+.callout .label { color: var(--accent); }
+
+/* Vocab */
+.vocab-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.vocab-tools input[type="search"] {
+  flex: 1 1 220px; min-width: 0; font: inherit; font-size: 15px; padding: 9px 12px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink);
+}
+.toggle {
+  font-family: var(--f-display); font-weight: 600; font-size: 14px; padding: 9px 14px; border-radius: 6px; cursor: pointer;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+}
+.toggle[aria-pressed="true"] { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.count { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.vocab { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.word { position: relative; background: var(--surface); border: 1px solid var(--line); padding: 18px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.word .term { font-family: var(--f-display); font-weight: 800; font-size: 20px; color: var(--accent); overflow-wrap: anywhere; padding-right: 36px; }
+.word .def { font-size: 15px; }
+.word .gloss { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+/* Nueve reinas: perforated stamp edge */
+.nr-scope .word { padding: 22px; box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 7px var(--nr-soft); }
+.nr-scope .word::before {
+  content: ""; position: absolute; inset: -5px; pointer-events: none;
+  background:
+    radial-gradient(circle, var(--bg) 3.5px, transparent 4px) 0 0 / 14px 14px repeat-x,
+    radial-gradient(circle, var(--bg) 3.5px, transparent 4px) 0 100% / 14px 14px repeat-x,
+    radial-gradient(circle, var(--bg) 3.5px, transparent 4px) 0 0 / 14px 14px repeat-y,
+    radial-gradient(circle, var(--bg) 3.5px, transparent 4px) 100% 0 / 14px 14px repeat-y;
+}
+/* NN: evidence tag */
+.nn-scope .word { border-left: 4px solid var(--nn); border-radius: 2px 6px 6px 2px; }
+.word .tag-no { position: absolute; top: 12px; right: 14px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.word .reveal {
+  display: none; font-family: var(--f-display); font-weight: 600; font-size: 14px; color: var(--accent); background: var(--soft);
+  border: 0; border-radius: 4px; padding: 8px 10px; cursor: pointer; justify-self: start;
+}
+.practice .word:not(.shown) .def, .practice .word:not(.shown) .gloss { display: none; }
+.practice .word:not(.shown) .reveal { display: inline-block; }
+.empty-note { color: var(--muted); font-style: italic; }
+
+/* Readings */
+.start-here { font-size: 15px; }
+.readings { display: grid; gap: 12px; }
+.reading {
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px;
+  padding: 16px 18px; display: grid; gap: 8px; min-width: 0;
+}
+.reading.pick { background: var(--soft); }
+.reading h3 { font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
+.reading h3 a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 3px; }
+.reading h3 a:hover { color: var(--accent); }
+.reading .src { font-size: 14px; color: var(--muted); }
+.reading .why { font-size: 15px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip.pick { border-color: var(--accent); color: var(--accent); }
+.lvl-Fácil { color: #2f7d4f; border-color: currentColor; }
+.lvl-Medio { color: #9a6a00; border-color: currentColor; }
+.lvl-Difícil { color: #b03a3a; border-color: currentColor; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lvl-Fácil { color: #7fd3a0; } :root:not([data-theme="light"]) .lvl-Medio { color: #f0c86a; } :root:not([data-theme="light"]) .lvl-Difícil { color: #f19a9a; } }
+:root[data-theme="dark"] .lvl-Fácil { color: #7fd3a0; } :root[data-theme="dark"] .lvl-Medio { color: #f0c86a; } :root[data-theme="dark"] .lvl-Difícil { color: #f19a9a; }
+.reading-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.reading-filters button {
+  font-family: var(--f-display); font-weight: 600; font-size: 14px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+}
+.reading-filters button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; align-items: start; }
+
+/* Compare */
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+thead th { font-family: var(--f-display); font-size: 16px; }
+thead th.nr { color: var(--nr); } thead th.nn { color: var(--nn); }
+tbody th { font-family: var(--f-display); font-weight: 600; width: 190px; }
+.big-idea { font-family: var(--f-display); font-size: clamp(20px, 3vw, 26px); font-weight: 600; line-height: 1.3; max-width: 40ch; }
+.big-idea .nr { color: var(--nr); } .big-idea .nn { color: var(--nn); }
+
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 20px; }
+@media (prefers-reduced-motion: no-preference) {
+  .film-card, .toggle, .reading-filters button { transition: border-color .15s, background-color .15s, color .15s; }
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <span class="label">Presentación de cine · Vocabulario y lecturas</span>
+    <h1><span class="nr">Nueve reinas</span> y <span class="nn">NN: Sin identidad</span></h1>
+    <p>Vocabulario útil para ver las dos películas y reseñas para entender mejor cada una. <span class="en">Vocabulary to watch with, plus reviews and analysis.</span></p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Secciones">
+  <div class="wrap">
+    <a href="#inicio">Inicio</a>
+    <a href="#nueve-reinas" data-film="nr">Nueve reinas</a>
+    <a href="#nn" data-film="nn">NN</a>
+    <a href="#lecturas">Reseñas y lecturas</a>
+    <a href="#conectar">Conectar las películas</a>
+  </div>
+</nav>
+
+<main><div class="wrap">
+
+<!-- INICIO -->
+<section class="view" id="v-inicio">
+  <div class="block">
+    <h2>Cómo usar esta guía</h2>
+    <ol class="steps">
+      <li><span class="label">Antes de ver</span><b>Lee el vocabulario</b><span>Repasa la lista de la película (5 minutos). Prueba el modo práctica.</span></li>
+      <li><span class="label">Mientras ves</span><b>Subtítulos en español</b><span>Es más fácil seguir el diálogo rápido.</span></li>
+      <li><span class="label">Después</span><b>Lee una o dos reseñas</b><span>Elige lecturas para preparar la presentación.</span></li>
+    </ol>
+  </div>
+  <div class="films">
+    <a class="film-card nr-scope" href="#nueve-reinas">
+      <h3>Nueve reinas</h3>
+      <dl>
+        <dt>Director</dt><dd>Fabián Bielinsky</dd>
+        <dt>País, año</dt><dd>Argentina, 2000</dd>
+        <dt>Dónde verla</dt><dd>YouTube</dd>
+      </dl>
+      <span class="go">Vocabulario →</span>
+    </a>
+    <a class="film-card nn-scope" href="#nn">
+      <h3>NN: Sin identidad</h3>
+      <dl>
+        <dt>Director</dt><dd>Héctor Gálvez</dd>
+        <dt>País, año</dt><dd>Perú, 2014</dd>
+        <dt>Dónde verla</dt><dd>Kanopy (con cuenta de biblioteca)</dd>
+      </dl>
+      <span class="go">Vocabulario →</span>
+    </a>
+  </div>
+</section>
+
+<!-- NUEVE REINAS -->
+<section class="view nr-scope" id="v-nueve-reinas" hidden>
+  <div class="film-head">
+    <span class="label">Fabián Bielinsky · Argentina · 2000 · Dónde verla: YouTube</span>
+    <h2>Nueve reinas</h2>
+    <div class="cast">
+      <span><b>Ricardo Darín</b> · Marcos</span>
+      <span><b>Gastón Pauls</b> · Juan</span>
+      <span><b>Leticia Brédice</b> · Valeria</span>
+    </div>
+    <p class="prose">Los personajes hablan rápido y en español rioplatense (Buenos Aires), con voseo y mucho lunfardo (jerga porteña). <span class="en">Fast Buenos Aires Spanish: voseo plus local slang.</span></p>
+  </div>
+  <div class="callout">
+    <span class="label">Voseo</span>
+    <p><i>Vos</i> en lugar de <i>tú</i>, con otra forma del verbo: <b>vos tenés</b> (tú tienes), <b>vos querés</b> (tú quieres), <b>vos sabés</b> (tú sabes), <b>mirá</b> (mira), <b>decí</b> (di).</p>
+  </div>
+  <div class="block">
+    <h2>Vocabulario</h2>
+    <div class="vocab-tools">
+      <input type="search" id="q-nr" placeholder="Buscar en español o inglés…" aria-label="Buscar en el vocabulario de Nueve reinas">
+      <button class="toggle" id="p-nr" aria-pressed="false" type="button">Modo práctica</button>
+      <span class="count" id="c-nr"></span>
+    </div>
+    <div class="vocab" id="vocab-nr"></div>
+  </div>
+  <div class="callout">
+    <span class="label">Contexto</span>
+    <p>La película se estrenó en agosto de 2000, poco antes de la gran crisis económica argentina de 2001. Muchos críticos la leen como un retrato de ese momento.</p>
+  </div>
+</section>
+
+<!-- NN -->
+<section class="view nn-scope" id="v-nn" hidden>
+  <div class="film-head">
+    <span class="label">Héctor Gálvez · Perú · 2014 · Dónde verla: Kanopy</span>
+    <h2>NN: Sin identidad</h2>
+    <div class="cast">
+      <span><b>Paul Vega</b> · Fidel</span>
+      <span><b>Antonieta Pari</b> · Graciela</span>
+    </div>
+    <p class="prose">La película tiene poco diálogo y un ritmo lento; el vocabulario clave es forense y de la memoria histórica. <span class="en">Little dialogue; the key words are forensic and about historical memory.</span></p>
+  </div>
+  <div class="callout">
+    <span class="label">Contexto</span>
+    <p>Entre 1980 y 2000, Perú vivió un conflicto armado interno entre el grupo Sendero Luminoso y el Estado. Miles de personas desaparecieron. La película no explica esta historia; supone que el público ya la conoce.</p>
+  </div>
+  <div class="block">
+    <h2>Vocabulario</h2>
+    <div class="vocab-tools">
+      <input type="search" id="q-nn" placeholder="Buscar en español o inglés…" aria-label="Buscar en el vocabulario de NN">
+      <button class="toggle" id="p-nn" aria-pressed="false" type="button">Modo práctica</button>
+      <span class="count" id="c-nn"></span>
+    </div>
+    <div class="vocab" id="vocab-nn"></div>
+  </div>
+</section>
+
+<!-- LECTURAS -->
+<section class="view" id="v-lecturas" hidden>
+  <div class="block prose">
+    <span class="label">Reseñas y análisis</span>
+    <h2>Lecturas para la presentación</h2>
+    <p>Cada persona lee por lo menos una reseña de cada película. Las marcadas como <b>Para empezar</b> son las más accesibles.</p>
+  </div>
+  <div class="reading-filters" role="group" aria-label="Filtrar por idioma">
+    <button type="button" data-lang="all" aria-pressed="true">Todas</button>
+    <button type="button" data-lang="Español" aria-pressed="false">En español</button>
+    <button type="button" data-lang="Inglés" aria-pressed="false">En inglés</button>
+  </div>
+  <div class="two-col">
+    <div class="block nr-scope">
+      <h2 style="color: var(--nr)">Nueve reinas</h2>
+      <p class="start-here">Para empezar: la reseña de Espinof (corta) y la entrevista de Página/12 (la voz del director).</p>
+      <div class="readings" id="read-nr"></div>
+    </div>
+    <div class="block nn-scope">
+      <h2 style="color: var(--nn)">NN</h2>
+      <p class="start-here">Para empezar: la reseña de Micropsia (español) o la de FIPRESCI (inglés), que explica el contexto histórico.</p>
+      <div class="readings" id="read-nn"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONECTAR -->
+<section class="view" id="v-conectar" hidden>
+  <div class="block">
+    <span class="label">Ideas para conectar las dos películas</span>
+    <p class="big-idea">Las dos tratan de la identidad: en <i class="nr">Nueve reinas</i> todos fingen ser otra persona; en <i class="nn">NN</i> un muerto no tiene nombre.</p>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Tema</th><th class="nr">Nueve reinas</th><th class="nn">NN: Sin identidad</th></tr></thead>
+      <tbody>
+        <tr><th>Identidad falsa vs. identidad perdida</th><td>Los estafadores inventan identidades.</td><td>Los antropólogos intentan recuperar una.</td></tr>
+        <tr><th>Objetos que valen mucho</th><td>Las estampillas falsas.</td><td>Una fotografía en el bolsillo del muerto.</td></tr>
+        <tr><th>Verdad y engaño</th><td>¿Quién dice la verdad?</td><td>¿Es mejor saber la verdad o tener paz?</td></tr>
+        <tr><th>Crisis de un país</th><td>La Argentina antes de la crisis de 2001.</td><td>El Perú después del conflicto armado.</td></tr>
+        <tr><th>Estilo</th><td>Rápida, con mucho diálogo.</td><td>Lenta, con cámara fija y silencio.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div></main>
+
+<footer><div class="wrap">Guía de clase sobre <i>Nueve reinas</i> (2000) y <i>NN: Sin identidad</i> (2014). Los enlaces abren las reseñas originales en sus sitios.</div></footer>
+
+<script>
+/* [palabra, significado, English] */
+const VOCAB = {
+  nr: [
+    ["la estafa", "un engaño para sacar dinero", "scam, con"],
+    ["el estafador", "persona que hace estafas", "con man"],
+    ["el cuento del tío", "una estafa clásica con una historia falsa", "con game, hustle"],
+    ["trucho/a", "falso", "fake, counterfeit"],
+    ["la falsificación", "copia ilegal de algo", "forgery"],
+    ["la estampilla / el sello", "lo que se pone en una carta", "postage stamp"],
+    ["el coleccionista", "persona que colecciona objetos", "collector"],
+    ["la guita", "dinero", "money, dough"],
+    ["el mango", "un peso (moneda)", "a peso, a buck"],
+    ["el laburo / laburar", "el trabajo / trabajar", "job / to work"],
+    ["el chorro / afanar", "ladrón / robar", "thief / to steal"],
+    ["la cana", "la policía; también la cárcel", "cops; jail"],
+    ["el pibe / la mina", "chico / mujer", "kid, guy / woman"],
+    ["che", "palabra para llamar la atención", "hey"],
+    ["boludo", "tonto; entre amigos, casi como “dude”", "idiot; dude"],
+    ["el quilombo", "un lío, un desorden", "mess, chaos"],
+    ["posta", "de verdad", "for real"],
+    ["el chamuyo / chamuyar", "palabras para convencer o seducir", "smooth talk"],
+    ["dale", "de acuerdo, vamos", "OK, come on"],
+    ["tener cara de buen tipo", "parecer honesto", "to look trustworthy"]
+  ],
+  nn: [
+    ["NN", "sin nombre; un cuerpo no identificado", "John/Jane Doe"],
+    ["el conflicto armado interno", "la guerra interna en Perú (1980–2000)", "internal armed conflict"],
+    ["Sendero Luminoso", "grupo armado maoísta", "Shining Path"],
+    ["el desaparecido", "persona que desapareció por la violencia política", "the disappeared"],
+    ["la fosa (común)", "hoyo donde enterraron cuerpos", "(mass) grave"],
+    ["la exhumación / exhumar", "sacar un cuerpo de la tierra", "exhumation / to exhume"],
+    ["los restos", "lo que queda de un cuerpo", "remains"],
+    ["el antropólogo forense", "científico que identifica restos", "forensic anthropologist"],
+    ["identificar / la identificación", "saber quién es la persona", "to identify / ID"],
+    ["la prueba de ADN", "análisis genético", "DNA test"],
+    ["la prenda", "una pieza de ropa", "item of clothing"],
+    ["reclamar (los restos)", "pedir oficialmente el cuerpo de un familiar", "to claim (the remains)"],
+    ["el familiar", "miembro de la familia", "relative"],
+    ["la viuda", "mujer cuyo esposo murió", "widow"],
+    ["el duelo", "el dolor y el proceso después de una muerte", "mourning, grief"],
+    ["la memoria", "el recuerdo colectivo del pasado", "(historical) memory"],
+    ["la verdad / la justicia", "lo que pasó / lo que se debe hacer", "truth / justice"],
+    ["la burocracia / el trámite", "procesos oficiales lentos", "bureaucracy / paperwork"],
+    ["la Comisión de la Verdad y Reconciliación", "comisión que investigó el conflicto (informe de 2003)", "Truth and Reconciliation Commission"]
+  ]
+};
+
+const READINGS = {
+  nr: [
+    { t: "“Los estafadores son fascinantes”", src: "Entrevista con Bielinsky, Página/12 (2000)", url: "https://www.pagina12.com.ar/2000/00-08/00-08-31/pag27.htm", lang: "Español", lvl: "Medio", why: "El director explica qué quería hacer.", pick: true },
+    { t: "“Nueve reinas, brillante castillo de naipes”", src: "Espinof", url: "https://www.espinof.com/criticas/nueve-reinas-brillante-castillo-de-naipes", lang: "Español", lvl: "Fácil", why: "Reseña corta y clara.", pick: true },
+    { t: "Entrevista con Bielinsky", src: "PopMatters", url: "https://www.popmatters.com/fabin-bielinsky-interview-2496101381.html", lang: "Inglés", lvl: "Fácil", why: "Buena opción para leer en inglés." },
+    { t: "“Representación fílmica del universo posmoderno”", src: "Gómez Moragas, Ciencia Ergo Sum (2009)", url: "https://doaj.org/article/0f3a246fc84549b192e3587f4f2a6e59", lang: "Español", lvl: "Difícil", why: "La película como alegoría de la crisis ética del poder." },
+    { t: "Tres películas argentinas y la crisis de 2001", src: "Temas de Nuestra América (2013)", url: "https://revistas.una.ac.cr/index.php/tdna/article/download/6079/6028/13794", lang: "Español", lvl: "Difícil", why: "El contexto económico y social." }
+  ],
+  nn: [
+    { t: "Reseña desde el Festival de Roma", src: "Micropsia (2014)", url: "https://www.micropsiacine.com/2014/10/festival-de-roma-nn-de-hector-galvez/", lang: "Español", lvl: "Medio", why: "La burocracia y la falta de voluntad política.", pick: true },
+    { t: "“NN, una película de entre los muertos”", src: "Perú21", url: "https://peru21.pe/cultura/nn-pelicula-muertos-197048-noticia/", lang: "Español", lvl: "Medio", why: "Una mirada peruana." },
+    { t: "“La gente no quiere tener memoria”", src: "Entrevista con Gálvez, Ventana Indiscreta", url: "https://revistas.ulima.edu.pe/index.php/Ventana_indiscreta/article/download/4180/4415", lang: "Español", lvl: "Medio", why: "El director habla de memoria y de los invisibilizados." },
+    { t: "“Every Human Being Must Have a Name”", src: "FIPRESCI", url: "https://fipresci.org/report/every-human-being-must-have-a-name-notes-on-hector-galvez-nn/", lang: "Inglés", lvl: "Fácil", why: "Explica Sendero Luminoso y el estilo visual.", pick: true },
+    { t: "On re-editing ‘final’ versions: the case of NN", src: "Sussex Reframe", url: "https://reframe.sussex.ac.uk/mediatico/?p=1278", lang: "Inglés", lvl: "Medio", why: "Hay dos versiones de la película." }
+  ]
+};
+
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+
+/* Vocabulary */
+function renderVocab(film) {
+  const box = document.getElementById("vocab-" + film);
+  const q = norm(document.getElementById("q-" + film).value.trim());
+  const all = VOCAB[film].map((w, i) => ({ w, i }));
+  const list = all.filter(({ w }) => !q || norm(w.join(" ")).includes(q));
+  document.getElementById("c-" + film).textContent = q ? `${list.length} de ${all.length} palabras` : `${all.length} palabras`;
+  if (!list.length) { box.innerHTML = '<p class="empty-note">No hay palabras que coincidan con tu búsqueda.</p>'; return; }
+  box.innerHTML = list.map(({ w, i }) => `
+    <article class="word">
+      ${film === "nn" ? `<span class="tag-no">Nº ${String(i + 1).padStart(3, "0")}</span>` : ""}
+      <span class="term">${esc(w[0])}</span>
+      <p class="def">${esc(w[1])}</p>
+      <p class="gloss">${esc(w[2])}</p>
+      <button class="reveal" type="button">Ver significado</button>
+    </article>`).join("");
+}
+["nr", "nn"].forEach(film => {
+  renderVocab(film);
+  document.getElementById("q-" + film).addEventListener("input", () => renderVocab(film));
+  const btn = document.getElementById("p-" + film);
+  const box = document.getElementById("vocab-" + film);
+  btn.addEventListener("click", () => {
+    const on = btn.getAttribute("aria-pressed") !== "true";
+    btn.setAttribute("aria-pressed", String(on));
+    box.classList.toggle("practice", on);
+    box.querySelectorAll(".word.shown").forEach(el => el.classList.remove("shown"));
+  });
+  box.addEventListener("click", e => {
+    const b = e.target.closest(".reveal");
+    if (b) b.closest(".word").classList.add("shown");
+  });
+});
+
+/* Readings */
+let lang = "all";
+function renderReadings() {
+  ["nr", "nn"].forEach(film => {
+    const box = document.getElementById("read-" + film);
+    const list = READINGS[film].filter(r => lang === "all" || r.lang === lang);
+    box.innerHTML = list.length ? list.map(r => `
+      <article class="reading${r.pick ? " pick" : ""}">
+        <div class="chips">
+          ${r.pick ? '<span class="chip pick">Para empezar</span>' : ""}
+          <span class="chip">${esc(r.lang)}</span>
+          <span class="chip lvl-${esc(r.lvl)}">${esc(r.lvl)}</span>
+        </div>
+        <h3><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.t)}</a></h3>
+        <p class="src">${esc(r.src)}</p>
+        <p class="why">${esc(r.why)}</p>
+      </article>`).join("") : '<p class="empty-note">No hay lecturas en este idioma.</p>';
+  });
+}
+document.querySelectorAll(".reading-filters button").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  document.querySelectorAll(".reading-filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  renderReadings();
+}));
+renderReadings();
+
+/* Routing */
+const VIEWS = ["inicio", "nueve-reinas", "nn", "lecturas", "conectar"];
+function route() {
+  let h = location.hash.slice(1);
+  if (!VIEWS.includes(h)) h = "inicio";
+  VIEWS.forEach(v => { document.getElementById("v-" + v).hidden = v !== h; });
+  document.querySelectorAll("nav.tabs a").forEach(a => {
+    if (a.getAttribute("href") === "#" + h) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+}
+window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
+route();
+
+</script>
+
+</body>
+</html>
